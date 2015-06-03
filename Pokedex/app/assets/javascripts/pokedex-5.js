@@ -6,10 +6,10 @@ Pokedex.Views.PokemonIndex = Backbone.View.extend({
   },
 
   initialize: function (options) {
-    this.collections = new Pokedex.Collections.Pokemon();
-    this.collections.fetch();
-    this.listenTo(this.collections, "sync", this.render);
-    this.listenTo(this.collections, "add", this.addPokemonToList);
+    this.collection = new Pokedex.Collections.Pokemon();
+    this.collection.fetch();
+    this.listenTo(this.collection, "sync", this.render);
+    this.listenTo(this.collection, "add", this.addPokemonToList);
   },
 
   addPokemonToList: function (pokemon) {
@@ -18,9 +18,8 @@ Pokedex.Views.PokemonIndex = Backbone.View.extend({
   },
 
   refreshPokemon: function (options) {
-    this.collections.fetch({
+    this.collection.fetch({
       success: function () {
-        // callback();
         options.success && options.success();
       }
     });
@@ -28,7 +27,7 @@ Pokedex.Views.PokemonIndex = Backbone.View.extend({
 
   render: function () {
     this.$el.empty();
-    this.collections.each(this.addPokemonToList.bind(this));
+    this.collection.each(this.addPokemonToList.bind(this));
     return this;
   },
 
@@ -60,7 +59,6 @@ Pokedex.Views.PokemonDetail = Backbone.View.extend({
     var content = JST['pokemonDetail']({ pokemon: this.model });
     this.$el.html(content);
 
-    console.log(this.model.toys());
     var $toys = this.$el.find('.toys');
     this.model.toys().each((function (toy) {
       $toys.append(JST['toyListItem']({ toy: toy }));
