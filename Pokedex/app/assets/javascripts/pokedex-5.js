@@ -17,26 +17,26 @@ Pokedex.Views.PokemonIndex = Backbone.View.extend({
     this.$el.append(content);
   },
 
-  refreshPokemon: function (callback) {
+  refreshPokemon: function (options) {
     this.collections.fetch({
       success: function () {
-        callback();
+        // callback();
+        options.success && options.success();
       }
     });
   },
 
   render: function () {
     this.$el.empty();
-    this.collections.each(function (pokemon) {
-      this.addPokemonToList(pokemon);
-    }.bind(this))
-
+    this.collections.each(this.addPokemonToList.bind(this));
     return this;
   },
 
   selectPokemonFromList: function (event) {
     var pokeId = $(event.currentTarget).data('id');
-    Backbone.history.navigate("/pokemon/" + pokeId, { trigger: true});
+    Backbone.history.navigate("/pokemon/" + pokeId,
+                              { trigger: true}
+                             );
   }
 });
 
@@ -47,24 +47,30 @@ Pokedex.Views.PokemonDetail = Backbone.View.extend({
 
   refreshPokemon: function (options) {
     this.model.fetch({
-      success: this.render.bind(this)
+      success: function () {
+        this.render();
+        options.success && options.success();
+      }.bind(this)
     });
   },
 
   render: function () {
     this.$el.empty();
+
     var content = JST['pokemonDetail']({ pokemon: this.model });
-    this.$el.append(content);
-    this.model.toys().each(function(toy) {
-      var toyContent = JST['toyListItem']({ toy: toy });
-      $('.pokemon-detail .toys').append(toyContent);
-    });
+    this.$el.html(content);
+
+    console.log(this.model.toys());
+    var $toys = this.$el.find('.toys');
+    this.model.toys().each((function (toy) {
+      $toys.append(JST['toyListItem']({ toy: toy }));
+    }).bind(this));
 
     return this;
   },
 
   selectToyFromList: function (event) {
-    var pokeId = $(event.currentTarget).data('pokemon-id');
+    var pokeId = this.model.id;
     var toyId = $(event.currentTarget).data('id');
     Backbone.history.navigate('/pokemon/' + pokeId + '/toys/' + toyId,
                               { trigger: true })
